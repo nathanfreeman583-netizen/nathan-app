@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NATHAN — Daily OS</title>
+<style>
+:root{--bg:#070707;--panel:rgba(255,255,255,.075);--panel2:rgba(255,255,255,.045);--line:rgba(255,255,255,.11);--text:#f7f7f7;--muted:#9a9a9a;--accent:#fff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#202020 0,#0a0a0a 38%,#050505 100%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Arial,sans-serif;min-height:100vh}
+button,input,select{font:inherit}button{color:inherit;border:0;cursor:pointer}
+.app{max-width:1120px;margin:auto;padding:24px 20px 110px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-weight:800;letter-spacing:.18em;font-size:13px}.date{color:var(--muted);font-size:13px}
+.quote{padding:24px;border:1px solid var(--line);background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.035));backdrop-filter:blur(20px);border-radius:24px;margin-bottom:20px;box-shadow:0 15px 50px #0008}.eyebrow{text-transform:uppercase;letter-spacing:.15em;font-size:10px;color:#aaa}.quote h1{font-size:clamp(24px,4vw,42px);line-height:1.08;margin:10px 0 6px;max-width:800px}.quote p{margin:0;color:#aaa}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{grid-column:span 4;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px;backdrop-filter:blur(18px)}.wide{grid-column:span 8}.full{grid-column:1/-1}.card h2{font-size:16px;margin:0 0 14px}.metric{display:flex;justify-content:space-between;align-items:end;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07)}.metric:last-child{border:0}.metric b{font-size:24px}.metric span{color:var(--muted);font-size:12px}.pill{display:inline-flex;padding:6px 9px;border:1px solid var(--line);border-radius:999px;font-size:11px;color:#bbb}
+.chart{height:130px;display:flex;align-items:end;gap:7px;padding-top:10px}.bar{flex:1;border-radius:8px 8px 3px 3px;background:#eee;opacity:.8;min-height:8px}.labels{display:flex;justify-content:space-between;color:#666;font-size:9px;margin-top:7px}
+.list{display:grid;gap:9px}.row{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);padding:11px 12px;border-radius:13px}.row small{color:var(--muted)}
+.nav{position:fixed;z-index:10;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:4px;padding:7px;background:rgba(20,20,20,.72);border:1px solid var(--line);backdrop-filter:blur(24px);border-radius:22px;box-shadow:0 10px 40px #000b;max-width:calc(100% - 20px);overflow:auto}.nav button{background:transparent;padding:10px 12px;border-radius:16px;white-space:nowrap;font-size:11px;color:#aaa}.nav button.active{background:#f5f5f5;color:#050505}
+.page{display:none}.page.active{display:block}.btn{background:#eee;color:#050505;border-radius:12px;padding:9px 12px;font-size:12px;font-weight:700}.ghost{background:var(--panel2);color:#fff;border:1px solid var(--line)}
+.form{display:flex;gap:8px;flex-wrap:wrap}.form input,.form select{background:#111;color:#fff;border:1px solid var(--line);border-radius:11px;padding:10px}.check{accent-color:#fff}
+textarea{width:100%;min-height:80px;background:#111;color:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;resize:vertical}
+.chat{height:340px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:5px}.bubble{max-width:82%;padding:11px 13px;border-radius:15px;background:#181818;color:#ddd;font-size:13px;line-height:1.4}.me{align-self:flex-end;background:#eee;color:#080808}.chatbar{display:flex;gap:8px;margin-top:10px}.chatbar input{flex:1;background:#111;border:1px solid var(--line);border-radius:12px;padding:11px;color:#fff}
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-80px);background:#eee;color:#080808;padding:10px 14px;border-radius:12px;font-size:12px;transition:.3s;z-index:30}.toast.show{transform:translateX(-50%) translateY(0)}
+@media(max-width:760px){.app{padding:16px 13px 100px}.card,.wide{grid-column:1/-1}.quote{padding:19px}.nav button{padding:9px 8px}.date{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div id="syncModal" style="display:none;position:fixed;inset:0;background:#000b;z-index:50;padding:20px;align-items:center;justify-content:center">
+ <div class="card" style="max-width:560px;width:100%;background:#111">
+  <div style="display:flex;justify-content:space-between;align-items:center"><h2>Sync / Import</h2><button class="btn ghost" onclick="closeSync()">Close</button></div>
+  <p style="color:#aaa;font-size:12px;line-height:1.5">For the free web app, Apple Health remains the source of truth. You can paste daily summary values here and they will be saved to this browser. Direct automatic HealthKit syncing requires a native iOS app with Apple’s HealthKit capability and your permission.</p>
+  <div class="form">
+   <input id="impSteps" type="number" placeholder="Steps">
+   <input id="impSleep" placeholder="Sleep (e.g. 8h 07m)">
+   <input id="impHR" type="number" placeholder="Resting HR">
+   <input id="impHRV" type="number" placeholder="HRV ms">
+   <button class="btn" onclick="saveImport()">Save today</button>
+  </div>
+ </div>
+</div>
+<main class="app">
+  <div class="top"><div class="brand">NATHAN / DAILY OS</div><div class="date" id="date"></div></div>
+<div class="card full" style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+  <div><b>Daily sync</b><div style="color:#888;font-size:11px;margin-top:4px">Free web version • Apple Health data can be imported/exported through Health when available</div></div>
+  <button class="btn" onclick="openSync()">Sync / Import</button>
+</div>
+
+  <section id="home" class="page active">
+    <div class="quote"><div class="eyebrow">Daily reset</div><h1 id="quote"></h1><p id="quoteAuthor"></p></div>
+    <div class="grid">
+      <div class="card wide"><h2>Today at a glance <span class="pill">LIVE DEMO DATA</span></h2>
+        <div class="metric"><span>Steps</span><b id="steps">8,421</b></div>
+        <div class="metric"><span>Active energy</span><b>642 kcal</b></div>
+        <div class="metric"><span>Resting HR</span><b>56 bpm</b></div>
+        <div class="metric"><span>HRV</span><b>71 ms</b></div>
+      </div>
+      <div class="card"><h2>Readiness</h2><div style="font-size:52px;font-weight:800">84</div><p style="color:#aaa;font-size:12px">Good day to train. Keep intensity controlled if recovery drops.</p></div>
+      <div class="card wide"><h2>7-day activity</h2><div class="chart" id="activityChart"></div><div class="labels"><span>7d ago</span><span>Today</span></div></div>
+      <div class="card"><h2>Quick log</h2><div class="form"><button class="btn" onclick="logEvent('Workout')">＋ Workout</button><button class="btn ghost" onclick="logEvent('Sport')">＋ Sport</button><button class="btn ghost" onclick="logEvent('Revision')">＋ Revision</button></div><p id="logStatus" style="color:#888;font-size:11px;margin-top:13px">Nothing logged today.</p></div>
+    </div>
+  </section>
+
+  <section id="health" class="page"><div class="grid">
+    <div class="card full"><h2>Connect your data</h2>
+      <p style="color:#aaa;font-size:12px">This browser version cannot directly read Apple Health because HealthKit is a native iOS framework. For a free setup, use Apple Health as the central source and enter/import summaries here. A native version can later request HealthKit permissions for individual metrics.</p>
+      <button class="btn" onclick="openSync()">Open sync guide</button>
+    </div>
+    <div class="card full"><h2>Health hub</h2><p style="color:#aaa;font-size:12px">One dashboard for your Apple Watch / health ecosystem. This prototype uses demo values until real permissions and APIs are connected.</p></div>
+    <div class="card"><h2>Heart</h2><div class="metric"><span>Resting HR</span><b>56</b></div><div class="metric"><span>HRV</span><b>71 ms</b></div><div class="metric"><span>Walking HR avg</span><b>88</b></div></div>
+    <div class="card"><h2>Movement</h2><div class="metric"><span>Steps</span><b>8,421</b></div><div class="metric"><span>Distance</span><b>6.2 km</b></div><div class="metric"><span>Exercise</span><b>47 min</b></div></div>
+    <div class="card"><h2>Body</h2><div class="metric"><span>Weight</span><b id="weight">—</b></div><div class="metric"><span>Height</span><b id="height">—</b></div><div class="metric"><span>Update due</span><span>Weekly</span></div></div>
+    <div class="card full"><h2>Connected apps</h2>
+<div class="list" id="sources"></div>
+<p style="color:#777;font-size:11px;margin-top:12px">Direct automatic syncing is only possible where the provider exposes an authorised API/integration. This version does not ask for or store app passwords.</p>
+</div>
+  </div></section>
+
+  <section id="sleep" class="page"><div class="grid">
+    <div class="card wide"><h2>Sleep dashboard</h2><div class="metric"><span>Time asleep</span><b>8h 07m</b></div><div class="metric"><span>Sleep score</span><b>87</b></div><div class="metric"><span>Deep</span><b>1h 34m</b></div><div class="metric"><span>REM</span><b>1h 48m</b></div></div>
+    <div class="card"><h2>Tonight</h2><div style="font-size:30px;font-weight:800">22:45</div><p style="color:#aaa;font-size:12px">Target bedtime</p><button class="btn ghost" onclick="notify('Routine updated')">Edit routine</button></div>
+    <div class="card full"><h2>Sleep routine</h2><div class="list">
+      <label class="row"><span>Dim lights</span><input class="check" type="checkbox" checked></label>
+      <label class="row"><span>Stretch for 5 minutes</span><input class="check" type="checkbox" checked></label>
+      <label class="row"><span>Put phone away</span><input class="check" type="checkbox"></label>
+      <label class="row"><span>Prepare tomorrow</span><input class="check" type="checkbox"></label>
+    </div></div>
+  </div></section>
+
+  <section id="gino" class="page"><div class="grid"><div class="card full"><h2>Gino <span class="pill">ASSISTANT</span></h2>
+    <div class="chat" id="chat"><div class="bubble">Hi Nathan. Ask me about today's health, sleep, training, revision or schedule. I can also turn your logs into suggestions.</div></div>
+    <div class="chatbar"><input id="chatInput" placeholder="Ask Gino anything…"><button class="btn" onclick="askGino()">Send</button></div>
+  </div><div class="card full"><h2>Conversation memory</h2><p style="color:#aaa;font-size:12px">Your prototype saves assistant notes locally in this browser. Real cross-app memory can be connected when the required services are authorised.</p></div></div></section>
+
+  <section id="suggestions" class="page"><div class="grid">
+    <div class="card full"><h2>Suggestions for today</h2><div class="list" id="suggestionsList"></div></div>
+    <div class="card"><h2>Goal focus</h2><p style="color:#aaa;font-size:12px">Consistency over perfection. Use today's metrics and schedule together rather than chasing a single score.</p></div>
+    <div class="card"><h2>Weekly check-in</h2><p style="color:#aaa;font-size:12px">Review sleep, training, revision and events every Sunday.</p><button class="btn" onclick="notify('Weekly review opened')">Review</button></div>
+  </div></section>
+
+  <section id="other" class="page"><div class="grid">
+    <div class="card full"><h2>Integration centre</h2>
+      <p style="color:#aaa;font-size:12px">Your requested sources, with Apple Health excluded.</p>
+      <div class="list" id="integrationDetails"></div>
+    </div>
+    <div class="card wide"><h2>Calendar</h2><div class="list" id="calendar"></div><button class="btn ghost" onclick="addCalendar()">＋ Add event</button></div>
+    <div class="card"><h2>Revision log</h2><div class="form"><select id="subject"><option>Maths</option><option>English</option><option>RS</option><option>Science</option><option>Other</option></select><input id="mins" type="number" min="1" placeholder="mins"><button class="btn" onclick="addRevision()">Log</button></div><p id="revisionTotal" style="color:#aaa;font-size:12px;margin-top:14px">0 min today</p></div>
+    <div class="card full"><h2>Activity calendar</h2><div class="list" id="activityLog"></div></div>
+  </div></section>
+
+  <section id="nathan" class="page"><div class="grid">
+    <div class="card"><h2>My stats</h2><div class="form"><input id="heightInput" placeholder="Height (e.g. 170 cm)"><input id="weightInput" placeholder="Weight"><button class="btn" onclick="saveStats()">Save</button></div><p style="color:#888;font-size:11px">Weekly update reminder is enabled in this prototype.</p></div>
+    <div class="card"><h2>Sports</h2><div class="list" id="sports"></div><button class="btn ghost" onclick="addSport()">＋ Log sport</button></div>
+    <div class="card full"><h2>Upcoming events</h2><div class="list" id="events"></div></div>
+  </div></section>
+</main>
+
+<nav class="nav" id="nav">
+<button class="active" data-page="home">⌂ Home</button><button data-page="health">Health</button><button data-page="sleep">Sleep</button><button data-page="gino">Gino</button><button data-page="suggestions">Suggestions</button><button data-page="other">Other</button><button data-page="nathan">Nathan</button>
+</nav>
+
+<script>
+const quotes=[
+["Discipline is choosing what you want most over what you want now.","Daily reset"],
+["Small progress, repeated, becomes a different life.","Daily reset"],
+["You do not need a perfect day. You need a useful one.","Daily reset"],
+["Make the next decision a good one.","Daily reset"],
+["Consistency makes ordinary effort extraordinary.","Daily reset"],
+["Start where you are. Improve one thing.","Daily reset"],
+["Your future routine is built by today's choices.","Daily reset"]
+];
+const today=new Date(); const key=today.toISOString().slice(0,10);
+document.getElementById('date').textContent=today.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+let q=quotes[Math.floor(new Date(key).getTime()/86400000)%quotes.length];
+document.getElementById('quote').textContent='“'+q[0]+'”'; document.getElementById('quoteAuthor').textContent=q[1];
+
+const state=JSON.parse(localStorage.getItem('nathanOS')||'{}');
+state.daily=state.daily||{};
+state.logs=state.logs||[]; state.revision=state.revision||{}; state.sports=state.sports||[]; state.events=state.events||[
+  {date:'Tomorrow',title:'School / normal schedule'},{date:'This week',title:'Training session'}
+];
+function save(){localStorage.setItem('nathanOS',JSON.stringify(state))}
+function openSync(){document.getElementById('syncModal').style.display='flex';let d=state.daily[key]||{};document.getElementById('impSteps').value=d.steps||'';document.getElementById('impSleep').value=d.sleep||'';document.getElementById('impHR').value=d.hr||'';document.getElementById('impHRV').value=d.hrv||''}
+function closeSync(){document.getElementById('syncModal').style.display='none'}
+function saveImport(){state.daily[key]={steps:document.getElementById('impSteps').value||'—',sleep:document.getElementById('impSleep').value||'—',hr:document.getElementById('impHR').value||'—',hrv:document.getElementById('impHRV').value||'—'};save();notify('Today synced');closeSync();renderDaily()}
+function renderDaily(){let d=state.daily[key]||{};if(d.steps)document.getElementById('steps').textContent=Number(d.steps).toLocaleString();let hs=document.querySelector('#health');if(d.hr)hs.querySelectorAll('.metric b')[0].textContent=d.hr;if(d.hrv)hs.querySelectorAll('.metric b')[1].textContent=d.hrv+' ms';}
+
+function notify(t){let x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1800)}
+function logEvent(type){state.logs.push({type,date:key,time:new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));save();renderLogs();notify(type+' logged')}
+function renderLogs(){let a=state.logs.filter(x=>x.date===key);document.getElementById('logStatus').textContent=a.length?a.map(x=>x.type).join(' · ')+' logged today.':'Nothing logged today.';document.getElementById('activityLog').innerHTML=(state.logs.slice(-12).reverse().map(x=>`<div class="row"><span>${x.type}</span><small>${x.date} · ${x.time}</small></div>`).join('')||'<div class="row"><span>No activity yet</span><small>Log something above</small></div>')}
+function addRevision(){let s=document.getElementById('subject').value,m=Number(document.getElementById('mins').value||0);if(!m)return;state.revision[key]=(state.revision[key]||0)+m;save();document.getElementById('revisionTotal').textContent=state.revision[key]+' min today';notify(s+' revision logged')}
+function addCalendar(){let t=prompt('Event name');if(t){state.events.push({date:'Added today',title:t});save();renderCalendar();notify('Event added')}}
+function renderCalendar(){document.getElementById('calendar').innerHTML=state.events.map(e=>`<div class="row"><span>${e.title}</span><small>${e.date}</small></div>`).join('')}
+function addSport(){let s=prompt('Sport (e.g. football, tennis)');if(s){state.sports.push({name:s,date:key});save();renderSports();notify(s+' logged')}}
+function renderSports(){document.getElementById('sports').innerHTML=(state.sports.slice(-8).reverse().map(s=>`<div class="row"><span>${s.name}</span><small>${s.date}</small></div>`).join('')||'<div class="row"><span>No sports logged</span><small>Tap +</small></div>')}
+function saveStats(){state.height=document.getElementById('heightInput').value;state.weight=document.getElementById('weightInput').value;save();renderStats();notify('Stats saved')}
+function renderStats(){document.getElementById('height').textContent=state.height||'—';document.getElementById('weight').textContent=state.weight||'—';document.getElementById('heightInput').value=state.height||'';document.getElementById('weightInput').value=state.weight||''}
+function askGino(){let i=document.getElementById('chatInput'),v=i.value.trim();if(!v)return;let c=document.getElementById('chat');c.innerHTML+=`<div class="bubble me">${escapeHtml(v)}</div>`;i.value='';let r='Based on the demo data, your readiness is 84 and sleep is 8h 07m. ';if(/sleep|bed/i.test(v))r+='Tonight, keep your routine consistent and aim for the 22:45 target.';else if(/revision|study/i.test(v))r+='Log your revision in Other so your daily and weekly totals build automatically.';else if(/sport|train|workout/i.test(v))r+='Your current dashboard suggests a good day for controlled training. Check how you feel as well as the scores.';else r+='I can help turn your health, sleep, calendar and activity logs into a simple plan.';c.innerHTML+=`<div class="bubble">${r}</div>`;c.scrollTop=c.scrollHeight;state.chat=state.chat||[];state.chat.push({q:v,a:r,date:key});save()}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function renderSuggestions(){let items=['Keep your bedtime close to 22:45 tonight.','If you train, use your readiness score as one input rather than the only input.','Log any sport or workout immediately so your activity history stays complete.','Spend a short focused block on revision and record the subject + minutes.'];document.getElementById('suggestionsList').innerHTML=items.map(x=>`<div class="row"><span>${x}</span><button class="btn ghost" onclick="notify('Saved for later')">Save</button></div>`).join('')}
+function renderSources(){
+ const src=[
+  ["Bevel","Blocked for direct website sync","Bevel currently has no public consumer API for us to use directly. Its own support materials show Bevel relying on Apple Health for many sources; Garmin has a direct Bevel integration, but that does not expose a Bevel API to this website."],
+  ["Livity","Blocked without Apple Health","Livity's FAQ says its integrations with Oura, Ultrahuman, Whoop and Amazfit work through Apple Health; therefore removing Apple Health prevents those sources from flowing through Livity."],
+  ["HRV Tracker","Blocked for automatic web sync","The app is designed around iOS Health/HealthKit-style data access; a browser cannot request those private HealthKit permissions."],
+  ["Welltory","Partially possible","Welltory supports many direct sources, but its public consumer setup is primarily inside the Welltory app/aggregators. There is no general free consumer API endpoint we can safely connect this browser app to."],
+  ["Training Today","Blocked for automatic web sync","Training Today relies on Health/HealthKit data on Apple platforms, so a standalone website cannot directly pull its private data."],
+ ];
+ document.getElementById('sources').innerHTML=src.map(x=>`<div class="row"><span><b>${x[0]}</b><br><small>${x[2]}</small></span><span class="pill">${x[1]}</span></div>`).join('');
+ document.getElementById('integrationDetails').innerHTML=src.map(x=>`<div class="row"><span><b>${x[0]}</b></span><small>${x[1]}</small></div>`).join('');
+}
+function renderChart(){let vals=[55,72,48,82,65,91,70];document.getElementById('activityChart').innerHTML=vals.map(v=>`<div class="bar" style="height:${v}%"></div>`).join('')}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');window.scrollTo({top:0,behavior:'smooth'})});
+renderLogs();renderCalendar();renderSports();renderStats();renderSuggestions();renderSources();renderChart();renderDaily();
+if(state.revision[key])document.getElementById('revisionTotal').textContent=state.revision[key]+' min today';
+</script>
+</body>
+</html>

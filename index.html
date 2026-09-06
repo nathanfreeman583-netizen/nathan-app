@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NATHAN / DAILY OS</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f5f7;color:#111;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.app{max-width:760px;margin:auto;padding:24px 18px 100px}
+h1{margin:0;font-size:28px;letter-spacing:-1px}
+.sub{color:#777;font-size:13px;margin-top:4px}
+header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}
+.badge{background:#e8e8eb;padding:7px 10px;border-radius:20px;font-size:11px}
+.card{background:white;border-radius:22px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px #00000008}
+.title{font-size:12px;font-weight:700;color:#777;letter-spacing:.08em;margin-bottom:15px}
+button{border:0;border-radius:14px;padding:12px 15px;font-weight:700;background:#111;color:white}
+.secondary{background:#eee;color:#111}
+.buttons{display:flex;gap:9px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{background:#f5f5f7;border-radius:17px;padding:15px}
+.label{font-size:12px;color:#777}
+.value{font-size:25px;font-weight:750;margin-top:5px}
+.unit{font-size:12px;color:#777}
+.good{margin-top:14px;background:#f0f0f2;border-radius:16px;padding:14px;font-size:13px;line-height:1.5}
+.bars{height:120px;display:flex;align-items:end;gap:8px}
+.bar{flex:1;background:#111;border-radius:7px 7px 3px 3px}
+.days{display:flex;justify-content:space-between;color:#888;font-size:10px;margin-top:7px}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.quick button{background:#f0f0f2;color:#111;padding:15px 5px}
+.note{font-size:12px;color:#888;line-height:1.5}
+nav{position:fixed;bottom:0;left:0;right:0;background:#ffffffee;backdrop-filter:blur(15px);border-top:1px solid #ddd;padding:9px 5px;display:flex;justify-content:space-around}
+nav button{background:none;color:#777;padding:4px;font-size:10px}
+nav button.active{color:#111}
+nav span{display:block;font-size:18px;margin-bottom:2px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div>
+<h1>NATHAN / DAILY OS</h1>
+<div class="sub">Daily sync</div>
+</div>
+<div class="badge">FREE WEB VERSION</div>
+</header>
+<div class="card">
+<div class="title">SYNC / IMPORT</div>
+<p class="note">Apple Health data can be imported/exported through Health when available.</p>
+<div class="buttons">
+<button onclick="alert('Sync / Import coming soon')">Sync / Import</button>
+<button class="secondary" onclick="alert('Export coming soon')">Export</button>
+</div>
+</div>
+<div class="card">
+<div class="title">DAILY RESET</div>
+<h2>Today at a glance <span class="badge">LIVE DEMO DATA</span></h2>
+<div class="grid">
+<div class="metric">
+<div class="label">Steps</div>
+<div class="value">8,421</div>
+</div>
+<div class="metric">
+<div class="label">Active energy</div>
+<div class="value">642 <span class="unit">kcal</span></div>
+</div>
+<div class="metric">
+<div class="label">Resting HR</div>
+<div class="value">56 <span class="unit">bpm</span></div>
+</div>
+<div class="metric">
+<div class="label">HRV</div>
+<div class="value">71 <span class="unit">ms</span></div>
+</div>
+</div>
+<div class="good">
+<strong>Readiness 84</strong><br>
+Good day to train. Keep intensity controlled if recovery drops.
+</div>
+</div>
+<div class="card">
+<div class="title">7-DAY ACTIVITY</div>
+<div class="bars">
+<div class="bar" style="height:45%"></div>
+<div class="bar" style="height:65%"></div>
+<div class="bar" style="height:52%"></div>
+<div class="bar" style="height:80%"></div>
+<div class="bar" style="height:61%"></div>
+<div class="bar" style="height:73%"></div>
+<div class="bar" style="height:90%"></div>
+</div>
+<div class="days">
+<span>7d ago</span>
+<span>Today</span>
+</div>
+</div>
+<div class="card">
+<div class="title">QUICK LOG</div>
+<div class="quick">
+<button onclick="log('Workout')">＋ Workout</button>
+<button onclick="log('Sport')">＋ Sport</button>
+<button onclick="log('Revision')">＋ Revision</button>
+</div>
+<p id="log">Nothing logged today.</p>
+</div>
+</div>
+<nav>
+<button class="active"><span>⌂</span>Home</button>
+<button><span>♡</span>Health</button>
+<button><span>☾</span>Sleep</button>
+<button><span>◉</span>Gino</button>
+<button><span>✦</span>Suggestions</button>
+<button><span>•••</span>Other</button>
+</nav>
+<script>
+function log(type){
+document.getElementById("log").textContent=type+" logged today.";
+}
+</script>
+</body>
+</html>
